@@ -1,15 +1,45 @@
-import React from "react";
-
-function Stock() {
+function Stock({ stock, onStockClick }) {
   return (
-    <div>
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">{"Compant Name"}</h5>
-          <p className="card-text">{"Stock Price"}</p>
-        </div>
-      </div>
+    <div onClick={() => onStockClick(stock)}>
+      <h3>{stock.name}</h3>
+      <p>{stock.ticker}: ${stock.price}</p>
     </div>
   );
 }
-export default Stock;
+
+function PortfolioContainer({ portfolio, onRemoveStock }) {
+  return (
+    <div>
+      <h2>My Portfolio</h2>
+      {portfolio.map((stock) => (
+        <Stock key={stock.id} stock={stock} onStockClick={onRemoveStock} />
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [stocks, setStocks] = useState([]);
+  const [portfolio, setPortfolio] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/stocks')
+      .then((response) => response.json())
+      .then((data) => setStocks(data));
+  }, []);
+
+  const handleBuyStock = (stock) => {
+    setPortfolio([...portfolio, stock]);
+  };
+
+  const handleRemoveStock = (stockToRemove) => {
+    setPortfolio(portfolio.filter(stock => stock.id !== stockToRemove.id));
+  };
+
+  return (
+    <div>
+      <StockContainer stocks={stocks} onStockClick={handleBuyStock} />
+      <PortfolioContainer portfolio={portfolio} onRemoveStock={handleRemoveStock} />
+    </div>
+  );
+}
